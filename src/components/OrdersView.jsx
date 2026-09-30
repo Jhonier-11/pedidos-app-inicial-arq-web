@@ -5,11 +5,22 @@
  * No conoce la orquestación de negocio ni las pasarelas de pago —
  * toda esa lógica vive en usePedidosViewModel.
  */
-export default function OrdersView({ pedidos, loading, error, form, setField, enviarPedido }) {
+export default function OrdersView({
+  pedidos,
+  loading,
+  error,
+  form,
+  setField,
+  enviarPedido,
+  circuitoInventario,
+}) {
   return (
     <section className="orders">
       <form onSubmit={enviarPedido} className="orders-form">
         <h2>Nuevo pedido</h2>
+        {circuitoInventario === 'ABIERTO' && (
+          <p className="warning">⚠️ Inventario no disponible, intenta más tarde</p>
+        )}
         <label>
           Cliente
           <input value={form.cliente} onChange={(e) => setField('cliente', e.target.value)} required />

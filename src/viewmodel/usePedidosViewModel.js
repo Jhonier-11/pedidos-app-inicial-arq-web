@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FachadaPedidos } from '../patterns/FachadaPedidos.js'
+import { FachadaPedidos, estadoInventario } from '../patterns/FachadaPedidos.js'
 import { AdapterPasarelaX } from '../services/pagos/AdapterPasarelaX.js'
 import { AdapterPasarelaY } from '../services/pagos/AdapterPasarelaY.js'
 
@@ -22,6 +22,7 @@ export function usePedidosViewModel() {
   const [form, setForm] = useState(FORM_INICIAL)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [circuitoInventario, setCircuitoInventario] = useState(estadoInventario())
 
   function setField(campo, valor) {
     setForm((prev) => ({ ...prev, [campo]: valor }))
@@ -49,9 +50,10 @@ export function usePedidosViewModel() {
     } catch (err) {
       setError(err.message)
     } finally {
+      setCircuitoInventario(estadoInventario())
       setLoading(false)
     }
   }
 
-  return { pedidos, loading, error, form, setField, enviarPedido }
+  return { pedidos, loading, error, form, setField, enviarPedido, circuitoInventario }
 }
