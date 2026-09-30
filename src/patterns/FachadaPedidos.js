@@ -1,8 +1,8 @@
 import { inventario } from '../services/inventario.js'
 import { envios } from '../services/envios.js'
-import { notificaciones } from '../services/notificaciones.js'
 import { CircuitBreaker } from './CircuitBreaker.js'
 import { retry } from './retry.js'
+import { emisorPedidos, EVENTO_PEDIDO_ENVIADO } from './eventosPedidos.js'
 
 // Instancia única a nivel de módulo: FachadaPedidos se instancia una vez
 // por pedido (ver ViewModel), pero el Circuit Breaker debe conservar su
@@ -23,7 +23,9 @@ export function estadoInventario() {
  *   1. inventario.reservar(pedido.items) — protegido con retry + Circuit Breaker
  *   2. this.pago.procesar(pedido.total)  (el IPago inyectado)
  *   3. envios.programar(pedido.direccion)
- *   4. notificaciones.confirmar(pedido.cliente)
+ *   4. emitir evento de "pedido enviado" (Parte B: un suscriptor
+ *      independiente se encarga de confirmar el envío; la Fachada no
+ *      conoce quién reacciona al evento ni cómo)
  *
  * Si el pago falla (resultado.exito === false), NO continúa con envío
  * ni notificación: lanza un Error con un mensaje claro.
@@ -48,6 +50,8 @@ export class FachadaPedidos {
     }
 
     await envios.programar(pedido.direccion)
-    await notificaciones.confirmar(pedido.cliente)
+    emisorPedidos.dispatchEvent(
+      new CustomEvent(EVENTO_PEDIDO_ENVIADO, { detail: { cliente: pedido.cliente } }),
+    )
   }
 }
